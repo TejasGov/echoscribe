@@ -1,96 +1,112 @@
-# 🩺 EchoScribe: Ambient Clinical AI Scribe & Real-Time SOAP Engine
+# 🩺 EchoScribe: Ambient Clinical AI Scribe & Clinician EHR Portal
 
-> **Next-Generation Ambient Clinical Intelligence**: Transforming chaotic doctor-patient conversations into structured, audit-ready, FHIR-compliant Electronic Health Record (EHR) documentation in real-time.
+> **Next-Generation Ambient Clinical Intelligence**: Transforming doctor-patient conversations into structured, audit-ready, FHIR-compliant Electronic Health Record (EHR) documentation in real-time.
 
 [![FastAPI](https://img.shields.io/badge/Backend-FastAPI-009688?logo=fastapi)](https://fastapi.tiangolo.com/)
-[![React](https://img.shields.io/badge/Frontend-React%2019-61DAFB?logo=react)](https://react.dev/)
+[![React](https://img.shields.io/badge/Frontend-React%2018-61DAFB?logo=react)](https://react.dev/)
 [![FHIR R4](https://img.shields.io/badge/Standard-HL7%20FHIR%20R4-E36209)](https://hl7.org/fhir/R4/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 ---
 
-## 💡 The Problem: The Clinical Documentation Crisis
-- **Physician Burnout**: Clinicians spend upwards of **2 hours on EHR documentation for every 1 hour of direct patient care** ("pajama time").
-- **Cognitive Detachment**: Typing on computers breaks empathetic eye contact between doctors and vulnerable patients.
-- **Lost Revenue & Coding Inaccuracies**: Up to **15% of clinical billings are delayed or down-coded** due to omitted details or missing ICD-10 specificity.
+## 📁 Repository Structure
+
+```
+echoscribe/
+├── api/                             # FastAPI Backend & Streaming Engine
+│   ├── main.py                      # WebSocket stream & REST health endpoints
+│   ├── schemas.py                   # Pydantic v2 schemas for SOAP, audio & telemetry
+│   └── ...
+├── prompts/                         # Production Clinical Prompts
+│   └── soap_structuring.yaml        # SOAP transformation prompt with few-shot guidance
+├── frontend/                        # Enterprise Clinician Portal & Ambient Scribe UI
+│   ├── src/
+│   │   ├── components/
+│   │   │   ├── layout/AppHeader.tsx # Enterprise clinical top navigation bar
+│   │   │   └── scribe/EchoScribe.tsx# Ambient scribe, waveform, SOAP editor, E/M coding
+│   │   ├── pages/
+│   │   │   ├── SchedulePage.tsx     # Today's clinic schedule & encounter launcher
+│   │   │   ├── PatientsPage.tsx     # Searchable patient directory & panel overview
+│   │   │   ├── PatientChartPage.tsx # Patient chart: vitals, meds, problem list, past visits
+│   │   │   └── EncounterPage.tsx    # Live ambient clinical documentation encounter
+│   │   ├── lib/
+│   │   │   ├── encounter.ts         # Transcript script, FHIR R4 generator & voice modifier
+│   │   │   └── patients.ts          # Clinical patient records & demographics
+│   │   ├── App.tsx                  # Client routing (/ , /patients, /encounter)
+│   │   └── styles.css               # Clinical slate/navy styling & typography
+│   ├── package.json
+│   ├── vite.config.ts
+│   └── Dockerfile
+├── docker-compose.yml               # Multi-container orchestration (api + frontend)
+├── requirements.txt                 # Backend Python dependencies
+└── README.md
+```
 
 ---
 
-## ⚡ The Solution: EchoScribe Ambient Intelligence
-**EchoScribe** operates silently in the clinic room. Using ambient room microphones, it captures non-dictated, conversational speech, strips away chit-chat, extracts clinical entities, maps them to formal medical ontologies (ICD-10-CM, SNOMED-CT, RxNorm), and builds a real-time, verifiable SOAP note with exact audio-timestamp provenance.
+## 🏥 Clinician Portal Features
 
----
+1. **Today's Schedule (`/`)**:
+   - Clinic dashboard with real-time appointment queue, visit reasons, and status badges.
+   - Quick KPI telemetry: scheduled encounters, completed visits, pending sign-offs, average note generation time.
+   - One-click encounter launcher ("Start visit" / "Resume").
 
-## 🏗️ System Architecture & Dual-Stream Dataflow
+2. **Patient Directory (`/patients`)**:
+   - Searchable directory filtering by patient name and MRN.
+   - Direct status view, DOB, payer identification, and highlighted allergy warnings.
 
+3. **Patient Chart (`/patients/:patientId`)**:
+   - Comprehensive chart layout displaying demographic banner, latest vitals (BP, HR, Temp, SpO₂, BMI), active medication list, ICD-10 coded problem list, and past visit history with CPT codes.
+   - Direct shortcut to initiate an ambient documentation visit for the selected patient.
 
-
----
-
-## 🧬 BioNLP & Ontological Normalization Layer
-
-Raw dialogue regularly hides clinical diagnoses beneath colloquial idioms. EchoScribe routes transcribed entities through an ontological normalization layer:
-
-| Conversational Utterance | Detected Entity Type | Mapped CUI | Target Medical Ontology |
-|---|---|---|---|
-| *"Sugar issue"* | Disorder |  | **ICD-10-CM E11.9** (Type 2 diabetes) / **SNOMED-CT 44054006** |
-| *"Water pill"* | Medication |  | **RxNorm 4603** (Furosemide 40mg) |
-| *"High BP"* | Finding |  | **ICD-10-CM I10** (Essential hypertension) |
-| *"Puffed up ankles"* | Symptom |  | **SNOMED-CT 267038008** (Edema of lower extremity) |
-
----
-
-## 💻 Tech Stack Breakdown
-
-### Frontend (Clinical Dashboard)
-- **Framework**: React 19 + TypeScript + Vite
-- **Styling**: Tailwind CSS + shadcn/ui components
-- **Audio Viz**: Canvas Web Audio API Analyzer for real-time waveform inspection
-- **Icons**: Lucide React
-
-### Backend & Audio Streaming
-- **Engine**: Python 3.11 + FastAPI
-- **WebSockets**: Asynchronous bidirectional audio & live transcript streaming
-- **Schema Validation**: Pydantic v2 with strict JSON-Schema generation
-- **Containerization**: Docker & Docker Compose
-
-### AI & Speech Infrastructure
-- **VAD**: Silero Voice Activity Detector
-- **ASR**: Whisper v3 Turbo / Deepgram Nova-2 Medical
-- **Diarization**: PyAnnote Audio 3.1 (ECAPA-TDNN embeddings)
-- **Medical Ontologies**: UMLS REST API, scispaCy, MedCAT
-- **Orchestration**: LangGraph / Structured LLM Pipelines (Claude 3.5 Sonnet / GPT-4o)
-
----
-
-## 🎯 Hackathon Highlights & Competitive Moat
-
-1. **Zero Extrapolation / Anti-Hallucination Guardrails**:
-   EchoScribe rejects common LLM pitfalls. If a doctor never verbalized an abdominal palpation, the Objective section omits it—avoiding fraudulent medical billing liability.
-2. **Clickable Provenance Citations (, )**:
-   Every claim in the SOAP draft anchors directly to a transcript turn and audio timestamp. Clinicians can audit findings in under 2 seconds.
-3. **Voice Modifier Engine**:
-   Physicians can issue fast hands-free corrections: *"Echo, change left knee to right knee in exam and add 500mg naproxen to plan"*.
-4. **Instant FHIR R4 Export**:
-   One-click generation of validated HL7 FHIR , , and  payloads ready for EHR integration.
+4. **Ambient Scribe Encounter (`/encounter`)**:
+   - Pre-recording consent checkpoint requiring clinician and patient verbal verification.
+   - Audio telemetry bar with live decibel readout and real-time waveform visualization.
+   - Diarized transcript feed with timestamps, speaker labels (Dr. Shah vs Patient), and clinical domain categorization (`HPI`, `EXAM`, `PLAN`, `SOCIAL`).
+   - Bidirectional transcript-to-SOAP claim citations with visual provenance highlight.
+   - Real-time E/M 99214 Medical Decision Making complexity estimator.
+   - Hands-free voice modifier engine (*"Echo, change left knee to right knee..."*).
+   - HL7 FHIR R4 document bundle exporter (Composition, Condition, MedicationRequest, Provenance).
 
 ---
 
 ## 🚀 Quickstart Guide
 
-### Prerequisites
-- Docker & Docker Compose installed
-- Python 3.11+
-- Node.js 20+
+### Option 1: Docker Compose (Full Stack)
 
-### 1. Backend Setup
+```bash
+docker-compose up --build
+```
+- Frontend portal will be available at: `http://localhost:3000`
+- FastAPI backend documentation: `http://localhost:8000/docs`
 
+### Option 2: Local Development
 
-### 2. Docker Compose
+#### 1. Backend (FastAPI)
+```bash
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+pip install -r requirements.txt
+uvicorn api.main:app --reload --port 8000
+```
 
-API Swagger documentation is live at .
+#### 2. Frontend (React + Vite)
+```bash
+cd frontend
+npm install
+npm run dev
+```
+Open `http://localhost:3000` to interact with the clinician portal.
 
 ---
 
-## 📄 License & Compliance
+## 🔒 Clinical Ethics & Safety
+- **Anti-Hallucination Guardrails**: Unverified claims not present in the ambient transcript are strictly excluded from objective documentation.
+- **Traceable Provenance**: Every generated line of the SOAP note links directly to its source utterance timestamp.
+- **Safe Correction Loops**: Clinicians retain 100% edit authority via direct manual edit or voice-driven modifiers.
+- **Immediate Data Deletion**: Dedicated "Stop & delete" option to purge audio transcripts and active session cache upon request.
+
+---
+
+## 📜 License & Compliance
 Distributed under the MIT License. Designed strictly adhering to HIPAA privacy controls and HL7 FHIR Interoperability standards.
