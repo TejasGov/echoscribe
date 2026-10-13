@@ -2,10 +2,23 @@
 
 > **Next-Generation Ambient Clinical Intelligence**: Transforming doctor-patient conversations into structured, audit-ready, FHIR-compliant Electronic Health Record (EHR) documentation in real-time.
 
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-myecho--scriber.lovable.app-2ea44f?style=for-the-badge&logo=googlechrome&logoColor=white)](https://myecho-scriber.lovable.app)
 [![FastAPI](https://img.shields.io/badge/Backend-FastAPI-009688?logo=fastapi)](https://fastapi.tiangolo.com/)
 [![React](https://img.shields.io/badge/Frontend-React%2018-61DAFB?logo=react)](https://react.dev/)
 [![FHIR R4](https://img.shields.io/badge/Standard-HL7%20FHIR%20R4-E36209)](https://hl7.org/fhir/R4/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
+---
+
+
+---
+
+## 🌐 Live Interactive Demo
+
+Test the live clinician portal, ambient dual-stream diarization, live SOAP generation, and FHIR export:
+👉 **[https://myecho-scriber.lovable.app](https://myecho-scriber.lovable.app)**
+
+*Experience the schedule queue, patient directory, clinical charts, and live ambient documentation directly in your browser without local installation.*
 
 ---
 
