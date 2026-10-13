@@ -9,6 +9,96 @@
 
 ---
 
+## 🏗️ System Architecture & Data Flow
+
+EchoScribe uses a dual-stream ambient processing pipeline that ingests unscripted conversational audio, diarizes speakers, extracts standardized clinical entities, and synthesizes structured SOAP notes with provenance citations.
+
+```
+                   ┌──────────────────────────────────────────┐
+                   │    Ambient Room Audio (Clinician/Patient) │
+                   └────────────────────┬─────────────────────┘
+                                        │
+                                        ▼
+                   ┌──────────────────────────────────────────┐
+                   │    Silero VAD (Voice Activity Detection) │
+                   │       Noise Gate & Speech Chunking       │
+                   └────────────────────┬─────────────────────┘
+                                        │
+                    ┌───────────────────┴───────────────────┐
+                    ▼                                       ▼
+        ┌─────────────────────────┐             ┌─────────────────────────┐
+        │   OpenAI Whisper v3     │             │     PyAnnote.audio      │
+        │   Acoustic Speech-to-   │             │   Speaker Diarization   │
+        │   Text Transcription    │             │   (Physician vs Patient)│
+        └───────────┬─────────────┘             └───────────┬─────────────┘
+                    │                                       │
+                    └───────────────────┬───────────────────┘
+                                        │
+                                        ▼
+                   ┌──────────────────────────────────────────┐
+                   │  Transcript Aligner & Domain Segmenter   │
+                   │   Tags: HPI, OBJ_EXAM, PLAN, CHITCHAT    │
+                   └────────────────────┬─────────────────────┘
+                                        │
+                    ┌───────────────────┴───────────────────┐
+                    ▼                                       ▼
+        ┌─────────────────────────┐             ┌─────────────────────────┐
+        │  BioNLP Entity Linker   │             │  Synthesis LLM Engine   │
+        │  • scispaCy / MedCAT    │             │  • Claude 3.5 Sonnet /  │
+        │  • SNOMED-CT (Symptoms) │             │    Llama 3.3 / GPT-4o   │
+        │  • RxNorm (Medications) │             │  • Provenance Citation  │
+        │  • ICD-10 (Diagnoses)   │             │  • Few-Shot SOAP Struct │
+        └───────────┬─────────────┘             └───────────┬─────────────┘
+                    │                                       │
+                    └───────────────────┬───────────────────┘
+                                        │
+                                        ▼
+    ┌───────────────────────────────────────────────────────────────────────────┐
+    │                       EchoScribe Clinician Portal                         │
+    │  ┌──────────────────────┬───────────────────────┬──────────────────────┐  │
+    │  │ Diarized Live Stream │ Traceable SOAP Draft  │ Real-time Telemetry  │  │
+    │  │ • Speaker badges     │ • S: HPI & history    │ • Decibel audio bar  │  │
+    │  │ • Domain chips       │ • O: Exam findings    │ • E/M 99214 MDM calc │  │
+    │  │ • Utterance citation │ • A: Diagnoses & codes│ • Voice modifier     │  │
+    │  │ • Inline BioNLP tags │ • P: Prescriptions/PT │ • Patient chart link │  │
+    │  └──────────────────────┴───────────────────────┴──────────────────────┘  │
+    └─────────────────────────────────────┬─────────────────────────────────────┘
+                                          │
+                                          ▼
+                   ┌──────────────────────────────────────────┐
+                   │           EHR Export & Hand-off          │
+                   │  • HL7 FHIR R4 Bundle (Composition,      │
+                   │    Condition, MedicationRequest)         │
+                   │  • EHR REST & Copy-to-Clipboard Flow     │
+                   └──────────────────────────────────────────┘
+```
+
+---
+
+## 🧠 AI & BioNLP Stack
+
+### 1. Acoustic & Speech Ingestion
+* **Whisper (`whisper-large-v3` / OpenAI API)**: High-accuracy ambient speech-to-text resilient to conversational crosstalk, clinical jargon, and room acoustic noise.
+* **PyAnnote Audio (`pyannote.audio`)**: Neural speaker diarization classifying audio tracks into distinct speaker embeddings (`Physician` vs. `Patient`).
+* **Silero VAD (Voice Activity Detection)**: Real-time silence removal, chunking ambient streams into processed speech bursts.
+
+### 2. Biomedical NLP & Entity Normalization
+* **scispaCy (`en_core_sci_md`) & MedCAT**: Biomedical Named Entity Recognition (NER) isolating clinical findings, body sites, and drug mentions.
+* **Ontology Mapping**:
+  * **SNOMED-CT**: Symptoms and procedures (e.g., *"knee pain"* → `30989003`).
+  * **RxNorm**: Medication normalization (e.g., *"ibuprofen"* → Concept `5640`).
+  * **ICD-10-CM**: Working diagnoses (e.g., *"osteoarthritis, left knee"* → `M17.12`).
+
+### 3. Clinical Synthesis & Structuring LLM
+* **Models**: Claude 3.5 Sonnet / Llama-3.3-70B / GPT-4o.
+* **Prompt Engineering (`prompts/soap_structuring.yaml`)**:
+  * Filters non-clinical chitchat.
+  * Formats unstructured dialogue into canonical **S.O.A.P.** sections.
+  * Enforces **traceable provenance** by attaching turn IDs (`["T3", "T4"]`) to every clinical claim.
+* **Voice Modifier Agent**: Clinician voice commands (*"Echo, change left knee to right"*) dynamically rewrite claims and refresh mapped coding.
+
+---
+
 ## 📁 Repository Structure
 
 ```
@@ -85,7 +175,7 @@ docker-compose up --build
 #### 1. Backend (FastAPI)
 ```bash
 python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+source venv/bin/activate  # On Windows: venv\Scriptsctivate
 pip install -r requirements.txt
 uvicorn api.main:app --reload --port 8000
 ```
